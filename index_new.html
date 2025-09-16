@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Delegation System for Management - Ashok Malhotra Group</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root { --primary-color:#4f46e5; --bg:#f8fafc; --dark-bg:#0f172a; --card:#ffffff; --dark-card:#111827; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --info:#3b82f6; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--text); }
+    body.dark { background:var(--dark-bg); color:#e5e7eb; }
+    .sidebar { position:fixed; top:0; left:0; bottom:0; width:280px; background:var(--card); border-right:1px solid var(--border); overflow-y:auto; z-index:1040; }
+    body.dark .sidebar { background:var(--dark-card); border-right-color:#1f2937; }
+    .sidebar .brand { display:flex; align-items:center; gap:.75rem; padding:1rem; border-bottom:1px solid var(--border); }
+    body.dark .sidebar .brand { border-bottom-color:#1f2937; }
+    .sidebar .brand img { width:40px; height:40px; object-fit:contain; }
+    .sidebar .nav-link { color:#475569; border-radius:.5rem; margin:.25rem .5rem; display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { background:linear-gradient(135deg, var(--primary-color), #6366f1); color:#fff; }
+    .main { margin-left:280px; padding:1rem; }
+    .topbar { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:.75rem 1rem; display:flex; justify-content:space-between; align-items:center; }
+    body.dark .topbar, body.dark .card { background:var(--dark-card); border-color:#1f2937; }
+    .card { border:1px solid var(--border); border-radius:14px; }
+    .btn-icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid var(--border); background:transparent; color:#475569; }
+    .btn-icon:hover { background:var(--primary-color); color:#fff; border-color:var(--primary-color); }
+    .loading { width:20px; height:20px; border:2px solid #e5e7eb; border-top-color:var(--primary-color); border-radius:50%; animation:spin 1s linear infinite; display:inline-block; }
+    @keyframes spin { to{ transform:rotate(360deg) } }
+    .overlay { position:fixed; inset:0; background:rgba(15,23,42,.35); backdrop-filter: blur(6px); display:none; align-items:center; justify-content:center; z-index:1050; }
+    .overlay.show { display:flex; }
+    @media (max-width: 992px) { .main { margin-left:0 } .sidebar { transform:translateX(-100%); transition:transform .25s ease } .sidebar.show { transform:translateX(0) } .hamburger { display:inline-flex } }
+    .hamburger { display:none; background:none; border:none; font-size:1.25rem; }
+    .badge-soft { padding:.25rem .6rem; border-radius:999px; font-weight:600; font-size:.8rem; }
+    .badge-pending{ background:#fef3c7; color:#92400e } .badge-completed{ background:#d1fae5; color:#065f46 } .badge-overdue{ background:#fee2e2; color:#991b1b } .badge-revise{ background:#e0e7ff; color:#3730a3 }
+  </style>
+</head>
+<body>
+  <div id="overlay" class="overlay" role="status" aria-live="polite"><div class="text-center text-white"><div class="loading"></div><div class="mt-3 fw-semibold">Loading...</div></div></div>
+
+  <!-- Login -->
+  <section id="loginPage" class="min-vh-100 d-flex align-items-center justify-content-center" style="background:linear-gradient(135deg, var(--primary-color), #6366f1);">
+    <div class="bg-white rounded-4 shadow p-4 p-md-5" style="width:100%; max-width:420px;">
+      <div class="text-center mb-4">
+        <img src="https://amgrealty.in/wp-content/uploads/2025/05/AMG-logo-600x1024.png" alt="AMG Logo" style="width: 120px;" class="mb-2">
+        <h2 class="fw-bold">Delegation System for Management</h2>
+        <p class="text-muted">Ashok Malhotra Group</p>
+      </div>
+      <form id="loginForm" novalidate>
+        <div class="mb-3">
+          <label for="userId" class="form-label">User ID</label>
+          <input type="text" id="userId" class="form-control" required autocomplete="username">
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" id="password" class="form-control" required autocomplete="current-password">
+        </div>
+        <button id="loginBtn" type="submit" class="btn btn-primary w-100">
+          <span id="loginBtnText">Sign In</span>
+          <span id="loginLoader" class="loading d-none"></span>
+        </button>
+      </form>
+      <div id="loginAlert" class="alert alert-danger mt-3 d-none" role="alert"></div>
+    </div>
+  </section>
+
+  <!-- App -->
+  <section id="dashboard" class="d-none">
+    <nav class="sidebar" aria-label="Primary Navigation">
+      <div class="brand">
+        <img src="https://amgrealty.in/wp-content/uploads/2025/05/AMG-logo-600x1024.png" alt="AMG">
+        <div>
+          <div class="fw-bold">Delegation System</div>
+          <small class="text-muted">Ashok Malhotra Group</small>
+          <div id="userInfo" class="small mt-1 text-muted"></div>
+        </div>
+      </div>
+      <ul class="nav flex-column mt-2">
+        <li class="nav-item"><a class="nav-link active" data-section="overview" href="#"><i class="fas fa-chart-line"></i>Overview</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="upcoming" href="#"><i class="fas fa-calendar-alt"></i>Upcoming Tasks</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="pending" href="#"><i class="fas fa-clock"></i>Pending Tasks</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="all-tasks" href="#"><i class="fas fa-list"></i>All Tasks</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="revisions" href="#"><i class="fas fa-edit"></i>Revisions</a></li>
+        <li class="nav-item" id="assignTaskNav" style="display:none"><a class="nav-link" data-section="assign-task" href="#"><i class="fas fa-plus-circle"></i>Assign Task</a></li>
+        <li class="nav-item" id="linksNav" style="display:none"><a class="nav-link" data-section="links" href="#"><i class="fas fa-link"></i>Manage Links</a></li>
+        <li class="nav-item"><a class="nav-link" data-section="person-reports" href="#"><i class="fas fa-user-chart"></i>Person Reports</a></li>
+      </ul>
+      <div class="p-3 mt-auto">
+        <button class="btn btn-outline-danger w-100" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="topbar mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <button class="hamburger btn btn-light" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+          <h5 id="sectionTitle" class="mb-0">Overview</h5>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn-icon" onclick="toggleTheme()" aria-label="Toggle theme"><i class="fas fa-moon"></i></button>
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="fas fa-user me-2"></i><span id="currentUser"></span></button>
+            <ul class="dropdown-menu"><li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overview -->
+      <div id="overview-section" class="content-section">
+        <div class="row g-3 mb-3">
+          <div class="col-6 col-md-3"><div class="card p-3" style="background:linear-gradient(135deg, var(--primary-color), #6366f1); color:white;"><div class="fs-2 fw-bold" id="totalTasks">0</div><div class="opacity-75">Total Tasks</div></div></div>
+          <div class="col-6 col-md-3"><div class="card p-3" style="background:linear-gradient(135deg, var(--success), #059669); color:white;"><div class="fs-2 fw-bold" id="completedTasks">0</div><div class="opacity-75">Completed</div></div></div>
+          <div class="col-6 col-md-3"><div class="card p-3" style="background:linear-gradient(135deg, var(--warning), #d97706); color:white;"><div class="fs-2 fw-bold" id="pendingTasks">0</div><div class="opacity-75">Pending</div></div></div>
+          <div class="col-6 col-md-3"><div class="card p-3" style="background:linear-gradient(135deg, var(--danger), #dc2626); color:white;"><div class="fs-2 fw-bold" id="overdueTasks">0</div><div class="opacity-75">Overdue</div></div></div>
+        </div>
+        <div class="row g-3">
+          <div class="col-12 col-lg-6"><div class="card p-3"><h6>Status Distribution</h6><div class="position-relative" style="height:280px"><canvas id="statusChart"></canvas></div></div></div>
+          <div class="col-12 col-lg-6"><div class="card p-3"><h6>Recent Tasks</h6><ul id="recentTasksList" class="list-group list-group-flush"></ul></div></div>
+        </div>
+      </div>
+
+      <!-- Tasks list (shared template) -->
+      <div id="upcoming-section" class="content-section d-none"></div>
+      <div id="pending-section" class="content-section d-none"></div>
+      <div id="all-tasks-section" class="content-section d-none"></div>
+
+      <!-- Revisions -->
+      <div id="revisions-section" class="content-section d-none">
+        <div class="card p-3">
+          <h6 class="mb-3">Revisions</h6>
+          <div id="revisionsContainer"></div>
+        </div>
+      </div>
+
+      <!-- Assign Task -->
+      <div id="assign-task-section" class="content-section d-none">
+        <div class="card p-3">
+          <h6 class="mb-3">Assign Task</h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Given By</label>
+              <input id="givenBy" class="form-control" placeholder="Your name">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Department</label>
+              <select id="assignDepartment" class="form-select"></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Assign To (User)</label>
+              <select id="assignTo" class="form-select"></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Task Frequency</label>
+              <select id="taskFrequency" class="form-select"><option>One Time Only</option><option>Daily</option><option>Weekly</option><option>Monthly</option><option>Quarterly</option></select>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Task Description</label>
+              <textarea id="taskDescription" class="form-control" rows="2" placeholder="Describe the task...\n"></textarea>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Tutorial Links (optional)</label>
+              <input id="tutorialLinks" class="form-control" placeholder="https://...">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Planned Date</label>
+              <input id="plannedDate" type="date" class="form-control">
+            </div>
+          </div>
+          <div class="mt-3 d-flex gap-2">
+            <button class="btn btn-primary" onclick="submitAssignTask()"><i class="fas fa-plus me-2"></i>Create</button>
+            <button class="btn btn-outline-secondary" onclick="loadAssignTaskForm()"><i class="fas fa-rotate me-2"></i>Refresh Lists</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Links -->
+      <div id="links-section" class="content-section d-none">
+        <div class="card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-3"><h6 class="mb-0">Manage Links</h6></div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4"><input id="linkTitle" class="form-control" placeholder="Title"></div>
+            <div class="col-md-6"><input id="linkUrl" class="form-control" placeholder="https://..."></div>
+            <div class="col-md-2 d-grid"><button class="btn btn-primary" onclick="addLink()"><i class="fas fa-plus"></i> Add</button></div>
+          </div>
+          <div id="linksList"></div>
+        </div>
+      </div>
+
+      <!-- Person Reports -->
+      <div id="person-reports-section" class="content-section d-none">
+        <div class="card p-3">
+          <h6 class="mb-3">Person Reports</h6>
+          <div class="row g-3 align-items-end mb-3">
+            <div class="col-md-6"><label class="form-label">Select Person</label><select id="personSelect" class="form-select"></select></div>
+            <div class="col-md-3"><button class="btn btn-primary w-100" onclick="loadPersonReport()"><i class="fas fa-chart-pie me-2"></i>Load Report</button></div>
+          </div>
+          <div class="row g-3">
+            <div class="col-12 col-lg-6"><div class="card p-3"><h6>Summary</h6><div id="personSummary"></div></div></div>
+            <div class="col-12 col-lg-6"><div class="card p-3"><h6>Status Chart</h6><div class="position-relative" style="height:280px"><canvas id="personChart"></canvas></div></div></div>
+          </div>
+          <div class="card p-3 mt-3"><h6>Tasks</h6><div id="personTasks"></div></div>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+  <script>
+    let currentUser = null;
+
+    function qs(sel){ return document.querySelector(sel) }
+    function qsa(sel){ return Array.from(document.querySelectorAll(sel)) }
+    function showOverlay(v){ const o=qs('#overlay'); if(o) o.classList.toggle('show', !!v) }
+    function toggleSidebar(){ const s=qs('.sidebar'); if(s) s.classList.toggle('show') }
+    function toggleTheme(){ document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')) }
+
+    function setSection(name){
+      qsa('.nav-link').forEach(a=>a.classList.toggle('active', a.dataset.section===name));
+      qsa('.content-section').forEach(s=>s.classList.add('d-none'));
+      const id = name + (name.endsWith('-section')?'':'-section');
+      const el = qs('#'+id);
+      if(el) el.classList.remove('d-none');
+      qs('#sectionTitle').textContent = name==='all-tasks' ? 'All Tasks' : name.split('-').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');
+    }
+
+    function attachNav(){
+      qsa('.nav-link').forEach(a=>a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        const section = a.dataset.section;
+        setSection(section);
+        if(section==='overview') loadOverview(currentUser);
+        if(section==='upcoming') loadTasks('upcoming');
+        if(section==='pending') loadTasks('pending');
+        if(section==='all-tasks') loadTasks('all');
+        if(section==='revisions') loadRevisions();
+        if(section==='assign-task') loadAssignTaskForm();
+        if(section==='links') loadLinks();
+        if(section==='person-reports') initPersonReports();
+      }));
+    }
+
+    // Login flow
+    qs('#loginForm').addEventListener('submit', function(ev){
+      ev.preventDefault();
+      const userId = qs('#userId').value.trim();
+      const password = qs('#password').value.trim();
+      const btn=qs('#loginBtn'), text=qs('#loginBtnText'), loader=qs('#loginLoader'), alertBox=qs('#loginAlert');
+      alertBox.classList.add('d-none'); btn.disabled=true; loader.classList.remove('d-none'); text.textContent='Signing in...'; showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){
+        showOverlay(false); btn.disabled=false; loader.classList.add('d-none'); text.textContent='Sign In';
+        if(res && res.success){
+          currentUser = res.user;
+          qs('#loginPage').classList.add('d-none');
+          qs('#dashboard').classList.remove('d-none');
+          qs('#currentUser').textContent = res.user.userId + ' ('+res.user.role+')';
+          qs('#userInfo').textContent = res.user.department;
+          if(res.user.role === 'Admin' || res.user.role === 'Super Admin') qs('#assignTaskNav').style.display='block';
+          if(res.user.role === 'Super Admin') qs('#linksNav').style.display='block';
+          setSection('overview');
+          loadOverview(res.user);
+        } else {
+          alertBox.textContent = (res && res.message) || 'Invalid credentials';
+          alertBox.classList.remove('d-none');
+        }
+      }).withFailureHandler(function(){
+        showOverlay(false); btn.disabled=false; loader.classList.add('d-none'); text.textContent='Sign In';
+        alertBox.textContent = 'Login failed. Please try again.'; alertBox.classList.remove('d-none');
+      }).authenticateUser({ userId, password });
+    });
+
+    function logout(){ location.reload() }
+
+    // Overview
+    function loadOverview(user){
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){
+        showOverlay(false);
+        if(!res || !res.success) return;
+        const s = res.stats || { total:0, completed:0, pending:0, overdue:0 };
+        qs('#totalTasks').textContent = s.total; qs('#completedTasks').textContent = s.completed; qs('#pendingTasks').textContent = s.pending; qs('#overdueTasks').textContent = s.overdue;
+        if(window.statusChartInstance){ window.statusChartInstance.destroy() }
+        const ctx = qs('#statusChart');
+        if(ctx){ window.statusChartInstance = new Chart(ctx, { type:'doughnut', data:{ labels:['Pending','Completed','Overdue','Revise'], datasets:[{ data:[res.distribution?.Pending||0,res.distribution?.Completed||0,res.distribution?.Overdue||0,res.distribution?.Revise||0], backgroundColor:['#f59e0b','#10b981','#ef4444','#6366f1'] }] }, options:{ plugins:{ legend:{ position:'bottom' } } } }) }
+        const list = qs('#recentTasksList');
+        if(list){ list.innerHTML = (res.recentTasks||[]).map(t=>`<li class="list-group-item d-flex justify-content-between align-items-center"><span class="text-truncate" style="max-width:70%">${t.description||''}</span><span class="badge bg-secondary">${t.status||''}</span></li>`).join('') }
+      }).withFailureHandler(function(){ showOverlay(false) }).getOverviewStats({ userRole: user.role, userDepartment: user.department });
+    }
+
+    // Tasks
+    function loadTasks(section){
+      showOverlay(true);
+      const params = { section: section==='all' ? undefined : section, userRole: currentUser.role, userDepartment: currentUser.department, filters:{} };
+      google.script.run.withSuccessHandler(function(res){
+        showOverlay(false);
+        if(!res || !res.success){ return }
+        renderTasks(section, res.tasks||[]);
+      }).withFailureHandler(function(){ showOverlay(false) }).getTasks(params);
+    }
+
+    function renderTasks(section, tasks){
+      const id = section==='all' ? '#all-tasks-section' : `#${section}-section`;
+      const el = qs(id);
+      if(!el) return;
+      const rows = tasks.map(t=>{
+        const statusCls = t.status==='Completed'?'badge-completed':(t.status==='Pending'?'badge-pending':(t.status==='Overdue'?'badge-overdue':'badge-revise'));
+        return `<tr>
+          <td class="text-nowrap">${t.taskId||''}</td>
+          <td>${t.description||''}</td>
+          <td class="text-nowrap">${t.givenTo||''} (${t.userId||''})</td>
+          <td class="text-nowrap">${t.plannedDate||''}</td>
+          <td><span class="badge-soft ${statusCls}">${t.status||''}</span></td>
+          <td class="text-nowrap">
+            ${t.status!=='Completed'?`<button class="btn btn-sm btn-success me-1" onclick="completeTask('${t.taskId}','${t.userId}')"><i class='fas fa-check'></i></button>`:''}
+            <button class="btn btn-sm btn-outline-primary me-1" onclick="openTaskDetails('${t.taskId}')"><i class='fas fa-eye'></i></button>
+            <button class="btn btn-sm btn-warning" onclick="openRevision('${t.taskId}')"><i class='fas fa-rotate'></i></button>
+          </td>
+        </tr>`
+      }).join('');
+      el.innerHTML = `<div class="card p-3">${section!=='all'?`<h6 class="mb-3 text-capitalize">${section} tasks</h6>`:`<h6 class='mb-3'>All Tasks</h6>`}
+        <div class="table-responsive"><table class="table align-middle">
+          <thead><tr><th>Task ID</th><th>Description</th><th>Assigned To</th><th>Planned</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>${rows || '<tr><td colspan="6" class="text-center text-muted">No tasks found</td></tr>'}</tbody>
+        </table></div>
+      </div>`;
+    }
+
+    function completeTask(taskId, userId){
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){
+        showOverlay(false);
+        if(res && res.success){ Swal.fire({ icon:'success', title:'Completed', timer:1500, showConfirmButton:false }); loadOverview(currentUser); }
+        else { Swal.fire({ icon:'error', title:'Failed', text:(res&&res.message)||'Could not complete task' }) }
+      }).withFailureHandler(function(){ showOverlay(false); Swal.fire({ icon:'error', title:'Failed' }) }).completeTask({ taskId, userId });
+    }
+
+    function openTaskDetails(taskId){
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){
+        showOverlay(false);
+        if(res && res.success){ const t = res.task; Swal.fire({ title: t.taskId, html:`<div class='text-start'><p><strong>Description:</strong> ${t.description||''}</p><p><strong>Given To:</strong> ${t.givenTo||''} (${t.userId||''})</p><p><strong>Planned:</strong> ${t.plannedDate||''}</p><p><strong>Status:</strong> ${t.status||''}</p></div>` }) }
+      }).withFailureHandler(function(){ showOverlay(false) }).getTaskDetails({ taskId });
+    }
+
+    function openRevision(taskId){
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){
+        showOverlay(false);
+        if(res && res.success){ const t=res.task; Swal.fire({
+          title:'Request Revision',
+          html:`<div class='text-start'>
+            <p><strong>${t.taskId}</strong> - ${t.description||''}</p>
+            <div class='mb-2'><label class='form-label'>New Date</label><input id='revDate' type='date' class='form-control' value='${t.newDate||''}'></div>
+            <div><label class='form-label'>Reason</label><textarea id='revReason' class='form-control' rows='2'>${t.reason||''}</textarea></div>
+          </div>`,
+          showCancelButton:true, confirmButtonText:'Submit', preConfirm:()=>({ newDate: document.getElementById('revDate').value, reason: document.getElementById('revReason').value })
+        }).then(r=>{ if(r.isConfirmed){ submitRevision(taskId, r.value.newDate, r.value.reason, t.userId) } }) }
+      }).withFailureHandler(function(){ showOverlay(false) }).getTaskDetails({ taskId });
+    }
+
+    function submitRevision(taskId, newDate, reason, userId){
+      if(!newDate){ Swal.fire({ icon:'warning', title:'Select a date' }); return }
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){
+        showOverlay(false);
+        if(res && res.success){ Swal.fire({ icon:'success', title:'Requested', timer:1500, showConfirmButton:false }); loadRevisions() }
+        else { Swal.fire({ icon:'error', title:'Failed', text:(res&&res.message)||'Could not request revision' }) }
+      }).withFailureHandler(function(){ showOverlay(false) }).requestRevision({ taskId, newDate, reason, userId });
+    }
+
+    // Revisions
+    function loadRevisions(){
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){
+        showOverlay(false);
+        const c = qs('#revisionsContainer'); if(!c) return;
+        if(!res || !res.success || !res.revisions?.length){ c.innerHTML = '<div class="text-muted">No revisions pending.</div>'; return }
+        c.innerHTML = res.revisions.map(r=>`<div class='d-flex justify-content-between align-items-center border rounded p-2 mb-2'>
+          <div class='me-2'><div class='fw-semibold'>${r.taskId} - ${r.description||''}</div><div class='small text-muted'>${r.givenTo||''} (${r.userId||''})</div></div>
+          <div class='d-flex align-items-center gap-2'>
+            <input type='date' class='form-control' value='${r.newDate||''}' id='newDate-${r.taskId}' style='max-width: 180px;'>
+            <button class='btn btn-sm btn-primary' onclick="approveRevision('${r.taskId}')"><i class='fas fa-check me-1'></i>Approve</button>
+          </div>
+        </div>`).join('');
+      }).withFailureHandler(function(){ showOverlay(false) }).getRevisions({ userRole: currentUser.role, userDepartment: currentUser.department });
+    }
+
+    function approveRevision(taskId){
+      const newDate = qs('#newDate-'+taskId)?.value;
+      if(!newDate){ Swal.fire({ icon:'warning', title:'Select a new date' }); return }
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){ showOverlay(false); if(res && res.success){ Swal.fire({ icon:'success', title:'Approved', timer:1200, showConfirmButton:false }); loadRevisions() } else { Swal.fire({ icon:'error', title:'Failed', text:(res&&res.message)||'Could not approve' }) } }).withFailureHandler(function(){ showOverlay(false) }).approveRevision({ taskId, newDate });
+    }
+
+    // Assign Task
+    function loadAssignTaskForm(){
+      showOverlay(true);
+      Promise.all([
+        new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getDropdownData()),
+        new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getDepartments())
+      ]).then(([usersRes, deptsRes])=>{
+        showOverlay(false);
+        const assignTo = qs('#assignTo'); const dept = qs('#assignDepartment');
+        assignTo.innerHTML = '<option value="">Select user</option>' + (usersRes?.data||[]).map(u=>`<option value='${u.userId}' data-name='${u.name}' data-dept='${u.department}'>${u.name} (${u.userId}) - ${u.department}</option>`).join('');
+        dept.innerHTML = '<option value="">Select department</option>' + (deptsRes?.departments||[]).map(d=>`<option>${d}</option>`).join('');
+      }).catch(()=>{ showOverlay(false) })
+    }
+
+    function submitAssignTask(){
+      const givenBy = qs('#givenBy').value.trim();
+      const assignSel = qs('#assignTo');
+      const givenTo = assignSel.value; const givenToName = assignSel.options[assignSel.selectedIndex]?.dataset.name||''; const department = qs('#assignDepartment').value;
+      const taskDescription = qs('#taskDescription').value.trim(); const tutorialLinks = qs('#tutorialLinks').value.trim(); const taskFrequency = qs('#taskFrequency').value; const plannedDate = qs('#plannedDate').value;
+      if(!givenBy || !givenTo || !taskDescription || !plannedDate){ Swal.fire({ icon:'warning', title:'Fill required fields' }); return }
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){ showOverlay(false); if(res && res.success){ Swal.fire({ icon:'success', title:`${res.tasksCreated||1} task(s) created`, timer:1600, showConfirmButton:false }); qs('#taskDescription').value=''; qs('#tutorialLinks').value=''; } else { Swal.fire({ icon:'error', title:'Failed', text:(res&&res.message)||'Could not assign' }) } }).withFailureHandler(function(){ showOverlay(false) }).assignTask({ givenBy, givenTo, givenToName, taskDescription, tutorialLinks, department, taskFrequency, plannedDate });
+    }
+
+    // Links
+    function loadLinks(){
+      if(currentUser.role!=='Super Admin'){ Swal.fire({ icon:'error', title:'Access Denied' }); return }
+      const list = qs('#linksList'); list.innerHTML = '<div class="text-center py-4"><span class="loading"></span> Loading...</div>';
+      google.script.run.withSuccessHandler(function(res){ if(res && res.success){ list.innerHTML = (res.links||[]).map(l=>`<div class='d-flex justify-content-between align-items-center border rounded p-2 mb-2'><div><a href='${l.url}' target='_blank' class='fw-semibold text-decoration-none'>${l.title}</a><div class='small text-muted'>${l.url}</div></div><button class='btn btn-sm btn-outline-danger' onclick="deleteLink('${l.id}')"><i class='fas fa-trash'></i></button></div>`).join('') || '<div class="text-muted">No links yet.</div>'; } else { list.innerHTML = '<div class="text-danger">Failed to load links</div>' } }).withFailureHandler(function(){ list.innerHTML = '<div class="text-danger">Failed to load links</div>' }).getLinks();
+    }
+
+    function addLink(){
+      const title = qs('#linkTitle').value.trim(); const url = qs('#linkUrl').value.trim();
+      if(!title || !url){ Swal.fire({ icon:'warning', title:'Enter title and URL' }); return }
+      try{ new URL(url) }catch(e){ Swal.fire({ icon:'warning', title:'Invalid URL' }); return }
+      google.script.run.withSuccessHandler(function(res){ if(res && res.success){ qs('#linkTitle').value=''; qs('#linkUrl').value=''; loadLinks(); Swal.fire({ icon:'success', title:'Link added', timer:1200, showConfirmButton:false }) } else { Swal.fire({ icon:'error', title:'Failed', text:(res&&res.message)||'Could not add' }) } }).withFailureHandler(function(){ Swal.fire({ icon:'error', title:'Failed' }) }).addLink({ title, url });
+    }
+
+    function deleteLink(id){
+      Swal.fire({ title:'Delete link?', icon:'warning', showCancelButton:true }).then(r=>{ if(r.isConfirmed){ google.script.run.withSuccessHandler(function(res){ if(res && res.success){ loadLinks(); Swal.fire({ icon:'success', title:'Deleted', timer:1000, showConfirmButton:false }) } else { Swal.fire({ icon:'error', title:'Failed' }) } }).withFailureHandler(function(){ Swal.fire({ icon:'error', title:'Failed' }) }).deleteLink({ id }) } })
+    }
+
+    // Person reports
+    function initPersonReports(){
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(users){
+        showOverlay(false);
+        const sel = qs('#personSelect'); sel.innerHTML = (users?.data||[]).map(u=>`<option value='${u.userId}'>${u.name} (${u.userId}) - ${u.department}</option>`).join('')
+      }).withFailureHandler(function(){ showOverlay(false) }).getDropdownData();
+    }
+
+    function loadPersonReport(){
+      const personId = qs('#personSelect').value; if(!personId) return;
+      showOverlay(true);
+      google.script.run.withSuccessHandler(function(res){
+        showOverlay(false);
+        if(!res || !res.success){ return }
+        const s = res.stats || { total:0, completed:0, pending:0, overdue:0 };
+        qs('#personSummary').innerHTML = `<div class='row g-2'>
+          <div class='col-6 col-md-3'><div class='border rounded p-2 text-center'><div class='fw-bold fs-5'>${s.total}</div><div class='small text-muted'>Total</div></div></div>
+          <div class='col-6 col-md-3'><div class='border rounded p-2 text-center'><div class='fw-bold fs-5 text-success'>${s.completed}</div><div class='small text-muted'>Completed</div></div></div>
+          <div class='col-6 col-md-3'><div class='border rounded p-2 text-center'><div class='fw-bold fs-5 text-warning'>${s.pending}</div><div class='small text-muted'>Pending</div></div></div>
+          <div class='col-6 col-md-3'><div class='border rounded p-2 text-center'><div class='fw-bold fs-5 text-danger'>${s.overdue}</div><div class='small text-muted'>Overdue</div></div></div>
+        </div>`;
+        if(window.personChartInstance){ window.personChartInstance.destroy() }
+        const ctx = qs('#personChart'); if(ctx){ window.personChartInstance = new Chart(ctx, { type:'doughnut', data:{ labels:['Completed','Pending','Overdue'], datasets:[{ data:[s.completed, s.pending, s.overdue], backgroundColor:['#10b981','#f59e0b','#ef4444']}]}, options:{ plugins:{ legend:{ position:'bottom' }}} }) }
+        qs('#personTasks').innerHTML = `<div class='table-responsive'><table class='table table-sm align-middle'><thead><tr><th>ID</th><th>Description</th><th>Planned</th><th>Status</th></tr></thead><tbody>${(res.tasks||[]).map(t=>`<tr><td>${t.taskId}</td><td>${t.description||''}</td><td>${t.plannedDate||''}</td><td>${t.status||''}</td></tr>`).join('') || '<tr><td colspan="4" class="text-center text-muted">No tasks</td></tr>'}</tbody></table></div>`;
+      }).withFailureHandler(function(){ showOverlay(false) }).getPersonTasks({ personId, userRole: currentUser.role, userDepartment: currentUser.department });
+    }
+
+    // Init
+    (function init(){
+      attachNav();
+      if(localStorage.getItem('darkMode')==='true'){ document.body.classList.add('dark') }
+    })();
+  </script>
+</body>
+</html>
