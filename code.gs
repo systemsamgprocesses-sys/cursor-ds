@@ -20,7 +20,7 @@ const CONFIG = {
  * 🚀 Serve the HTML dashboard
  */
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('index')
+  return HtmlService.createHtmlOutputFromFile('index_new')
     .setTitle('Task Management Dashboard')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -777,7 +777,7 @@ CONFIG.SHEETS.LINKS = 'LINKS';
  */
 function getLinks() {
   try {
-    const sheet = getLinksSheet();
+    let sheet = getLinksSheet();
     if (!sheet) {
       // Create the sheet if it doesn't exist
       const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -832,7 +832,7 @@ function getLinks() {
 function addLink(params) {
   try {
     const { title, url } = params;
-    const sheet = getLinksSheet();
+    let sheet = getLinksSheet();
     
     if (!sheet) {
       const ss = SpreadsheetApp.getActiveSpreadsheet();
