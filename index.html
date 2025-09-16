@@ -1,0 +1,2763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delegation System for Management - Ashok Malhotra Group</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #f8fafc;
+            --dark-bg: #1e293b;
+            --dark-card: #334155;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--secondary-color);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        body.dark-mode {
+            background: var(--dark-bg);
+            color: #e2e8f0;
+        }
+        .sidebar {
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-height: 100vh;
+            width: 260px;
+            transition: all 0.3s ease;
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            z-index: 1000;
+            overflow-y: auto;
+            padding-bottom: 60px;
+        }
+        .dark-mode .sidebar {
+            background: var(--dark-card);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            border-right-color: #475569;
+        }
+        .sidebar-brand {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .dark-mode .sidebar-brand {
+            border-bottom-color: #475569;
+        }
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+        .nav-link {
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 0;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
+            color: white;
+            transform: translateX(4px);
+        }
+        .nav-link i {
+            width: 20px;
+            margin-right: 0.75rem;
+        }
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+        .top-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dark-mode .top-bar {
+            background: var(--dark-card);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            margin-bottom: 1.5rem;
+        }
+        .dark-mode .card {
+            background: var(--dark-card);
+            border-color: #475569;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3730a3, var(--primary-color));
+            transform: translateY(-1px);
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+        }
+        .dark-mode .form-control, 
+        .dark-mode .form-select {
+            background: var(--dark-bg);
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        .table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .dark-mode .table {
+            background: var(--dark-card);
+            color: #e2e8f0;
+        }
+        .table th {
+            background: var(--secondary-color);
+            border: none;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .dark-mode .table th {
+            background: var(--dark-bg);
+            color: #e2e8f0;
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-overdue { background: #fee2e2; color: #991b1b; }
+        .status-revise { background: #e0e7ff; color: #3730a3; }
+        .status-future { background: #dbeafe; color: #1e40af; }
+        .login-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
+            color: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .dark-mode .filter-section {
+            background: var(--dark-card);
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1000;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .hamburger-btn {
+                display: block;
+            }
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+        .modal-content {
+            border-radius: 12px;
+        }
+        .dark-mode .modal-content {
+            background: var(--dark-card);
+            color: #e2e8f0;
+        }
+        .brand-logo {
+            width: 30px;
+            height: auto;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        .pagination {
+            margin: 0;
+        }
+        .pagination .page-item .page-link {
+            color: var(--text-primary);
+        }
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        /* Person-wise charts */
+        .person-chart-container {
+            height: 250px;
+            position: relative;
+        }
+        /* Links section */
+        .link-item {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dark-mode .link-item {
+            border-color: #475569;
+        }
+        /* Responsive adjustments */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        /* Task status indicators */
+        .task-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .indicator-overdue { background-color: var(--danger-color); }
+        .indicator-future { background-color: var(--info-color); }
+        .indicator-pending { background-color: var(--warning-color); }
+        .indicator-completed { background-color: var(--success-color); }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <img src="https://amgrealty.in/wp-content/uploads/2025/05/AMG-logo-600x1024.png" alt="AMG Logo" style="width: 120px; height: auto; margin-bottom: 1rem;">
+                <h2 class="fw-bold">Delegation System for Management</h2>
+                <p class="text-muted">Ashok Malhotra Group</p>
+                <p class="text-muted">Welcome back! Please sign in to your account.</p>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="userId" class="form-label">User ID</label>
+                    <input type="text" class="form-control" id="userId" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+                    <span id="loginBtnText">Sign In</span>
+                    <span id="loginLoader" class="loading d-none"></span>
+                </button>
+            </form>
+            <div id="loginAlert" class="alert alert-danger mt-3 d-none"></div>
+        </div>
+    </div>
+    <!-- Dashboard -->
+    <div id="dashboard" class="d-none">
+        <!-- Sidebar -->
+        <nav class="sidebar position-fixed">
+            <div class="sidebar-brand">
+                <img src="https://amgrealty.in/wp-content/uploads/2025/05/AMG-logo-600x1024.png" alt="AMG Logo" class="sidebar-logo">
+                <div>
+                    <h5 class="fw-bold mb-0">Delegation System</h5>
+                    <small class="text-muted">Ashok Malhotra Group</small>
+                    <div class="mt-2" id="userInfo"></div>
+                </div>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" data-section="overview">
+                        <i class="fas fa-chart-line"></i>Overview
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="upcoming">
+                        <i class="fas fa-calendar-alt"></i>Upcoming Tasks
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="pending">
+                        <i class="fas fa-clock"></i>Pending Tasks
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="all-tasks">
+                        <i class="fas fa-list"></i>All Tasks
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="revisions">
+                        <i class="fas fa-edit"></i>Revisions
+                    </a>
+                </li>
+                <li class="nav-item" id="assignTaskNav" style="display: none;">
+                    <a class="nav-link" href="#" data-section="assign-task">
+                        <i class="fas fa-plus-circle"></i>Assign Task
+                    </a>
+                </li>
+                <li class="nav-item" id="linksNav" style="display: none;">
+                    <a class="nav-link" href="#" data-section="links">
+                        <i class="fas fa-link"></i>Manage Links
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-section="person-reports">
+                        <i class="fas fa-user-chart"></i>Person Reports
+                    </a>
+                </li>
+            </ul>
+            <div class="mt-auto p-3">
+                <button class="btn btn-outline-danger w-100" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                </button>
+            </div>
+        </nav>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="d-flex align-items-center">
+                    <button class="hamburger-btn me-3" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h5 class="mb-0" id="sectionTitle">Overview</h5>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="theme-toggle" onclick="toggleTheme()">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-2"></i><span id="currentUser"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- Content Sections -->
+            <!-- Overview Section -->
+            <div id="overview-section" class="content-section">
+                <div class="row mb-4">
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card stats-card">
+                            <div class="position-relative">
+                                <h3 class="fw-bold mb-1" id="totalTasks">0</h3>
+                                <p class="mb-0 opacity-75">Total Tasks</p>
+                                <i class="fas fa-tasks position-absolute" style="top: 10px; right: 15px; font-size: 2rem; opacity: 0.3;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card" style="background: linear-gradient(135deg, var(--success-color), #059669); color: white;">
+                            <div class="card-body position-relative">
+                                <h3 class="fw-bold mb-1" id="completedTasks">0</h3>
+                                <p class="mb-0 opacity-75">Completed</p>
+                                <i class="fas fa-check-circle position-absolute" style="top: 10px; right: 15px; font-size: 2rem; opacity: 0.3;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card" style="background: linear-gradient(135deg, var(--warning-color), #d97706); color: white;">
+                            <div class="card-body position-relative">
+                                <h3 class="fw-bold mb-1" id="pendingTasks">0</h3>
+                                <p class="mb-0 opacity-75">Pending</p>
+                                <i class="fas fa-clock position-absolute" style="top: 10px; right: 15px; font-size: 2rem; opacity: 0.3;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card" style="background: linear-gradient(135deg, var(--danger-color), #dc2626); color: white;">
+                            <div class="card-body position-relative">
+                                <h3 class="fw-bold mb-1" id="overdueTasks">0</h3>
+                                <p class="mb-0 opacity-75">Overdue</p>
+                                <i class="fas fa-exclamation-triangle position-absolute" style="top: 10px; right: 15px; font-size: 2rem; opacity: 0.3;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Task Status Distribution</h6>
+                                <div class="text-muted small">All Tasks</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="statusDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Task Completion Timeline</h6>
+                                <div class="text-muted small">Last 30 Days</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="timelineChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Department-wise Task Distribution</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="departmentChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Recent Activity</h6>
+                                <button class="btn btn-sm btn-outline-primary" onclick="refreshTasks()">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Task ID</th>
+                                                <th>Description</th>
+                                                <th>Assigned To</th>
+                                                <th>Department</th>
+                                                <th>Status</th>
+                                                <th>Due Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="recentTasksTable">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4">
+                                                    <div class="loading me-2"></div>Loading recent tasks...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Person Reports Section -->
+            <div id="person-reports-section" class="content-section d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Person-wise Task Reports</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="personSelect" class="form-label">Select Person</label>
+                            <select class="form-select" id="personSelect">
+                                <option value="">All Persons</option>
+                            </select>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Task Completion Rate</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="person-chart-container">
+                                            <canvas id="personCompletionChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Task Status Breakdown</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="person-chart-container">
+                                            <canvas id="personStatusChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Task List for Selected Person</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Task ID</th>
+                                                <th>Description</th>
+                                                <th>Status</th>
+                                                <th>Due Date</th>
+                                                <th>Assigned Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="personTasksTable">
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">
+                                                    <div class="loading me-2"></div>Select a person to view tasks...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Assign Task Section -->
+            <div id="assign-task-section" class="content-section d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Assign New Task</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="assignTaskForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="givenBy" class="form-label">Given By</label>
+                                    <input type="text" class="form-control" id="givenBy" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="givenTo" class="form-label">Given To</label>
+                                    <select class="form-select" id="givenTo" required>
+                                        <option value="">Select User...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="taskDescription" class="form-label">Task Description</label>
+                                <textarea class="form-control" id="taskDescription" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="tutorialLinks" class="form-label">Tutorial Links (Optional)</label>
+                                <textarea class="form-control" id="tutorialLinks" rows="2"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="department" class="form-label">Department</label>
+                                    <input type="text" class="form-control" id="department" readonly>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="taskFrequency" class="form-label">Task Frequency</label>
+                                    <select class="form-select" id="taskFrequency" required>
+                                        <option value="">Select Frequency...</option>
+                                        <option value="Daily">Daily</option>
+                                        <option value="Weekly">Weekly</option>
+                                        <option value="Monthly">Monthly</option>
+                                        <option value="Quarterly">Quarterly</option>
+                                        <option value="One Time Only">One Time Only</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="plannedDate" class="form-label">Planned Date</label>
+                                    <input type="date" class="form-control" id="plannedDate" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="assignTaskBtn">
+                                <span id="assignBtnText">Assign Task</span>
+                                <span id="assignLoader" class="loading d-none"></span>
+                            </button>
+                        </form>
+                        <div id="assignAlert" class="alert d-none mt-3"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Links Management Section (Super Admin only) -->
+            <div id="links-section" class="content-section d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Manage Links</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6>Add New Link</h6>
+                            <div class="row">
+                                <div class="col-md-5 mb-3">
+                                    <input type="text" class="form-control" id="linkTitle" placeholder="Link Title" required>
+                                </div>
+                                <div class="col-md-5 mb-3">
+                                    <input type="url" class="form-control" id="linkUrl" placeholder="URL (https://...)" required>
+                                </div>
+                                <div class="col-md-2 mb-3">
+                                    <button class="btn btn-primary w-100" onclick="addLink()">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <h6>Existing Links</h6>
+                            <div id="linksList">
+                                <div class="text-center py-4">
+                                    <div class="loading me-2"></div>Loading links...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Task Lists Section -->
+            <div id="task-list-section" class="content-section d-none">
+                <!-- Filters -->
+                <div class="filter-section" id="superAdminFilters" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="searchFilter" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="searchFilter" placeholder="Search tasks...">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="nameFilter" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="nameFilter" placeholder="Filter by name...">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="statusFilter" class="form-label">Status</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Overdue">Overdue</option>
+                                <option value="Revise">Revise</option>
+                                <option value="Future">Future</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="frequencyFilter" class="form-label">Frequency</label>
+                            <select class="form-select" id="frequencyFilter">
+                                <option value="">All Frequencies</option>
+                                <option value="Daily">Daily</option>
+                                <option value="Weekly">Weekly</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Quarterly">Quarterly</option>
+                                <option value="One Time Only">One Time Only</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="departmentFilter" class="form-label">Department</label>
+                            <select class="form-select" id="departmentFilter">
+                                <option value="">All Departments</option>
+                            </select>
+                        </div>
+                        <div class="col-md-9 d-flex align-items-end">
+                            <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="clearFilters()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Filters for Non-Super Admins (Pending Tasks, etc.) -->
+                <div class="filter-section" id="generalFilters" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="searchFilterGen" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="searchFilterGen" placeholder="Search tasks...">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="nameFilterGen" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="nameFilterGen" placeholder="Filter by name...">
+                        </div>
+                        <div class="col-md-4 mb-3 d-flex align-items-end">
+                            <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="clearFilters()">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Task Table -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0" id="taskListTitle">All Tasks</h6>
+                        <div class="d-flex align-items-center">
+                            <label for="rowsPerPage" class="me-2 mb-0">Show:</label>
+                            <select class="form-select form-select-sm me-3" id="rowsPerPage" style="width: auto;" onchange="changeRowsPerPage()">
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="200">200</option>
+                            </select>
+                            <button class="btn btn-outline-primary btn-sm" onclick="refreshTasks()">
+                                <i class="fas fa-refresh me-1"></i>Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Task ID</th>
+                                        <th>Description</th>
+                                        <th>Assigned To</th>
+                                        <th>Department</th>
+                                        <th>Status</th>
+                                        <th>Due Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="taskTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <div class="loading me-2"></div>Loading tasks...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Pagination -->
+                        <div class="pagination-container">
+                            <div>
+                                Showing <span id="showingStart">1</span> to <span id="showingEnd">0</span> of <span id="totalTaskCount">0</span> entries
+                            </div>
+                            <nav>
+                                <ul class="pagination" id="pagination">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Revisions Section -->
+            <div id="revisions-section" class="content-section d-none">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Pending Revisions</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Task ID</th>
+                                        <th>Description</th>
+                                        <th>Assigned To</th>
+                                        <th>Original Date</th>
+                                        <th>Requested Date</th>
+                                        <th>Reason</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="revisionsTableBody">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <div class="loading me-2"></div>Loading revisions...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Task Detail Modal -->
+    <div class="modal fade" id="taskDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Task Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="taskDetailContent">
+                    <!-- Task details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="completeTaskBtn" style="display: none;">Mark as Complete</button>
+                    <button type="button" class="btn btn-warning" id="requestRevisionBtn" style="display: none;">Request Revision</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Revision Request Modal -->
+    <div class="modal fade" id="revisionRequestModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Request Revision</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="revisionRequestForm">
+                        <input type="hidden" id="revisionTaskId">
+                        <div class="mb-3">
+                            <label for="revisionNewDate" class="form-label">New Due Date</label>
+                            <input type="date" class="form-control" id="revisionNewDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="revisionReason" class="form-label">Reason for Revision</label>
+                            <textarea class="form-control" id="revisionReason" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitRevisionRequest()">Submit Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Revision Approval Modal -->
+    <div class="modal fade" id="revisionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Approve Revision</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="revisionApprovalForm">
+                        <input type="hidden" id="revisionTaskId">
+                        <div class="mb-3">
+                            <label for="newRevisionDate" class="form-label">New Date</label>
+                            <input type="date" class="form-control" id="newRevisionDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Task Details</label>
+                            <div id="revisionTaskDetails" class="border rounded p-3 bg-light"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="approveRevision()">Approve Revision</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
+    <script>
+        // Global variables
+        let currentUser = null;
+        let userRole = null;
+        let userDepartment = null;
+        let allTasks = [];
+        let filteredTasks = [];
+        let currentSection = null;
+        let revisionsLoaded = false;
+        let personCharts = {};
+        let overviewCharts = {};
+        // Pagination
+        let currentPage = 1;
+        let rowsPerPage = 25;
+        let totalPages = 1;
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            setupEventListeners();
+            // Initialize theme
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                const themeIcon = document.querySelector('.theme-toggle i');
+                if (themeIcon) themeIcon.className = 'fas fa-sun';
+            }
+        });
+        // Check authentication
+        function checkAuth() {
+            const user = sessionStorage.getItem('currentUser');
+            if (user) {
+                currentUser = JSON.parse(user);
+                userRole = currentUser.role;
+                userDepartment = currentUser.department;
+                showDashboard();
+                // Ensure Overview is active on login
+                showSection('overview');
+            } else {
+                showLogin();
+            }
+        }
+        // Setup event listeners
+        function setupEventListeners() {
+            // Login form
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.dataset.section;
+                    if (section) {
+                        showSection(section);
+                        setActiveNav(this);
+                    }
+                });
+            });
+            // Assign task form
+            const assignTaskForm = document.getElementById('assignTaskForm');
+            if (assignTaskForm) {
+                assignTaskForm.addEventListener('submit', handleAssignTask);
+            }
+            // Given To dropdown change
+            const givenToSelect = document.getElementById('givenTo');
+            if (givenToSelect) {
+                givenToSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption.dataset.department) {
+                        document.getElementById('department').value = selectedOption.dataset.department;
+                    }
+                });
+            }
+            // Person select change
+            const personSelect = document.getElementById('personSelect');
+            if (personSelect) {
+                personSelect.addEventListener('change', function() {
+                    loadPersonTasks(this.value);
+                });
+            }
+            // Filter inputs for Super Admin
+            const superAdminFilterIds = ['searchFilter', 'nameFilter', 'statusFilter', 'frequencyFilter', 'departmentFilter'];
+            superAdminFilterIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', applyFilters);
+                }
+            });
+            // Filter inputs for General (e.g., Pending Tasks)
+            const generalFilterIds = ['searchFilterGen', 'nameFilterGen'];
+            generalFilterIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', applyFilters);
+                }
+            });
+            // Search filters (debounced)
+            const searchFilters = ['searchFilter', 'searchFilterGen'];
+            searchFilters.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', debounce(applyFilters, 300));
+                }
+            });
+            // Name filters (debounced)
+            const nameFilters = ['nameFilter', 'nameFilterGen'];
+            nameFilters.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', debounce(applyFilters, 300));
+                }
+            });
+            // Rows per page
+            const rowsPerPageSelect = document.getElementById('rowsPerPage');
+            if (rowsPerPageSelect) {
+                rowsPerPageSelect.addEventListener('change', changeRowsPerPage);
+            }
+        }
+        // Handle login
+        function handleLogin(e) {
+            e.preventDefault();
+            const userId = document.getElementById('userId').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = true;
+            showLoginLoader(true);
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    loginBtn.disabled = false;
+                    showLoginLoader(false);
+                    if (result.success) {
+                        currentUser = result.user;
+                        userRole = result.user.role;
+                        userDepartment = result.user.department;
+                        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        showDashboard();
+                        // Show success alert
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Login successful!',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        // Force Overview tab
+                        showSection('overview');
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Login Failed',
+                            text: result.message || 'Invalid credentials',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    loginBtn.disabled = false;
+                    showLoginLoader(false);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login Failed',
+                        text: 'An error occurred. Please try again.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Login error:', error);
+                })
+                .authenticateUser({ userId, password });
+        }
+        // Show/hide login loader
+        function showLoginLoader(show) {
+            const loginBtnText = document.getElementById('loginBtnText');
+            const loginLoader = document.getElementById('loginLoader');
+            if (loginBtnText) loginBtnText.style.display = show ? 'none' : 'inline';
+            if (loginLoader) loginLoader.style.display = show ? 'inline-block' : 'none';
+        }
+        // Show login page
+        function showLogin() {
+            document.getElementById('loginPage').classList.remove('d-none');
+            document.getElementById('dashboard').classList.add('d-none');
+        }
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('loginPage').classList.add('d-none');
+            document.getElementById('dashboard').classList.remove('d-none');
+            document.getElementById('userInfo').textContent = `${currentUser.userId} - ${currentUser.department}`;
+            document.getElementById('currentUser').textContent = currentUser.userId;
+            document.getElementById('givenBy').value = currentUser.userId;
+            userRole = currentUser.role;
+            userDepartment = currentUser.department;
+            // Show/hide navigation items based on role
+            if (userRole === 'Admin' || userRole === 'Super Admin') {
+                document.getElementById('assignTaskNav').style.display = 'block';
+            } else {
+                document.getElementById('assignTaskNav').style.display = 'none';
+            }
+            if (userRole === 'Super Admin') {
+                document.getElementById('linksNav').style.display = 'block';
+                document.getElementById('superAdminFilters').style.display = 'block';
+                document.getElementById('generalFilters').style.display = 'none';
+                loadDepartments();
+            } else {
+                document.getElementById('linksNav').style.display = 'none';
+                document.getElementById('superAdminFilters').style.display = 'none';
+                document.getElementById('generalFilters').style.display = 'block';
+            }
+            loadDropdownData();
+            loadPersonData();
+            // Overview is shown by default via checkAuth
+        }
+        // Show section
+        function showSection(sectionName) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('d-none');
+            });
+            const titles = {
+                'overview': 'Overview',
+                'upcoming': 'Upcoming Tasks',
+                'pending': 'Pending Tasks',
+                'all-tasks': 'All Tasks',
+                'revisions': 'Revisions',
+                'assign-task': 'Assign Task',
+                'links': 'Manage Links',
+                'person-reports': 'Person Reports'
+            };
+            const sectionTitle = document.getElementById('sectionTitle');
+            if (sectionTitle) sectionTitle.textContent = titles[sectionName] || 'Dashboard';
+            switch (sectionName) {
+                case 'overview':
+                    const overviewSection = document.getElementById('overview-section');
+                    if (overviewSection) {
+                        overviewSection.classList.remove('d-none');
+                        loadOverviewData();
+                    }
+                    break;
+                case 'upcoming':
+                case 'pending':
+                case 'all-tasks':
+                    const taskListSection = document.getElementById('task-list-section');
+                    const taskListTitle = document.getElementById('taskListTitle');
+                    if (taskListSection) taskListSection.classList.remove('d-none');
+                    if (taskListTitle) taskListTitle.textContent = titles[sectionName];
+                    // Hide/show filters based on role and section
+                    if (userRole === 'Super Admin') {
+                        document.getElementById('superAdminFilters').style.display = 'block';
+                        document.getElementById('generalFilters').style.display = 'none';
+                    } else {
+                        document.getElementById('superAdminFilters').style.display = 'none';
+                        document.getElementById('generalFilters').style.display = 'block';
+                    }
+                    if (!allTasks.length || currentSection !== sectionName) {
+                        loadTasks(sectionName);
+                        currentSection = sectionName;
+                    } else {
+                        // Re-apply filters and pagination for the current data
+                        applyFilters();
+                    }
+                    break;
+                case 'revisions':
+                    const revisionsSection = document.getElementById('revisions-section');
+                    if (revisionsSection) {
+                        revisionsSection.classList.remove('d-none');
+                        if (!revisionsLoaded) {
+                            loadRevisions();
+                            revisionsLoaded = true;
+                        }
+                    }
+                    break;
+                case 'assign-task':
+                    const assignTaskSection = document.getElementById('assign-task-section');
+                    if (assignTaskSection) assignTaskSection.classList.remove('d-none');
+                    break;
+                case 'links':
+                    const linksSection = document.getElementById('links-section');
+                    if (linksSection) {
+                        linksSection.classList.remove('d-none');
+                        loadLinks();
+                    }
+                    break;
+                case 'person-reports':
+                    const personReportsSection = document.getElementById('person-reports-section');
+                    if (personReportsSection) {
+                        personReportsSection.classList.remove('d-none');
+                        // Charts will be loaded when a person is selected
+                    }
+                    break;
+            }
+            setActiveNav(document.querySelector(`.nav-link[data-section="${sectionName}"]`));
+        }
+        // Set active navigation
+        function setActiveNav(activeElement) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            activeElement.classList.add('active');
+        }
+        // Load dropdown data
+        function loadDropdownData() {
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        const givenToSelect = document.getElementById('givenTo');
+                        if (givenToSelect) {
+                            givenToSelect.innerHTML = '<option value="">Select User...</option>';
+                            result.data.forEach(item => {
+                                if (userRole === 'Super Admin' || item.department === userDepartment) {
+                                    const option = document.createElement('option');
+                                    option.value = item.userId;
+                                    option.textContent = `${item.name} (${item.department})`;
+                                    option.dataset.department = item.department;
+                                    option.dataset.name = item.name;
+                                    givenToSelect.appendChild(option);
+                                }
+                            });
+                        }
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to load users.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error loading dropdown ', error);
+                })
+                .getDropdownData();
+        }
+        // Load person data for person reports
+        function loadPersonData() {
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        const personSelect = document.getElementById('personSelect');
+                        if (personSelect) {
+                            personSelect.innerHTML = '<option value="">All Persons</option>';
+                            result.data.forEach(item => {
+                                if (userRole === 'Super Admin' || item.department === userDepartment) {
+                                    const option = document.createElement('option');
+                                    option.value = item.userId;
+                                    option.textContent = `${item.name} (${item.department})`;
+                                    option.dataset.department = item.department;
+                                    option.dataset.name = item.name;
+                                    personSelect.appendChild(option);
+                                }
+                            });
+                        }
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Error loading person data:', error);
+                })
+                .getDropdownData();
+        }
+        // Load overview data
+        function loadOverviewData() {
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        const totalTasks = document.getElementById('totalTasks');
+                        const completedTasks = document.getElementById('completedTasks');
+                        const pendingTasks = document.getElementById('pendingTasks');
+                        const overdueTasks = document.getElementById('overdueTasks');
+                        if (totalTasks) totalTasks.textContent = result.stats.total;
+                        if (completedTasks) completedTasks.textContent = result.stats.completed;
+                        if (pendingTasks) pendingTasks.textContent = result.stats.pending;
+                        if (overdueTasks) overdueTasks.textContent = result.stats.overdue;
+                        // Initialize charts
+                        initStatusDistributionChart(result.distribution);
+                        initTimelineChart(result.timelineData);
+                        initDepartmentChart(result.departmentData);
+                        loadRecentTasks(result.recentTasks);
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to load overview data.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error loading overview data:', error);
+                })
+                .getOverviewStats({
+                    userRole: userRole,
+                    userDepartment: userDepartment
+                });
+        }
+        // Initialize Status Distribution Chart
+        function initStatusDistributionChart(distribution) {
+            const ctx = document.getElementById('statusDistributionChart').getContext('2d');
+            // Destroy existing chart if any
+            if (overviewCharts.statusDistribution) {
+                overviewCharts.statusDistribution.destroy();
+            }
+            overviewCharts.statusDistribution = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Pending', 'Overdue', 'Revise', 'Future'],
+                    datasets: [{
+                        data: [
+                            distribution.completed || 0,
+                            distribution.pending || 0,
+                            distribution.overdue || 0,
+                            distribution.revise || 0,
+                            distribution.future || 0
+                        ],
+                        backgroundColor: [
+                            '#10b981', // Completed
+                            '#f59e0b', // Pending
+                            '#ef4444', // Overdue
+                            '#6366f1', // Revise
+                            '#3b82f6'  // Future
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        // Initialize Timeline Chart
+        function initTimelineChart(timelineData) {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            // Destroy existing chart if any
+            if (overviewCharts.timeline) {
+                overviewCharts.timeline.destroy();
+            }
+            // Create a line chart showing task completion over time
+            overviewCharts.timeline = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timelineData.dates,
+                    datasets: [
+                        {
+                            label: 'Completed Tasks',
+                            data: timelineData.completed,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Overdue Tasks',
+                            data: timelineData.overdue,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Pending Tasks',
+                            data: timelineData.pending,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        // Initialize Department Chart
+        function initDepartmentChart(departmentData) {
+            const ctx = document.getElementById('departmentChart').getContext('2d');
+            // Destroy existing chart if any
+            if (overviewCharts.department) {
+                overviewCharts.department.destroy();
+            }
+            // Create a bar chart showing tasks by department
+            overviewCharts.department = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: departmentData.departments,
+                    datasets: [
+                        {
+                            label: 'Completed',
+                            data: departmentData.completed,
+                            backgroundColor: '#10b981',
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'Pending',
+                            data: departmentData.pending,
+                            backgroundColor: '#f59e0b',
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'Overdue',
+                            data: departmentData.overdue,
+                            backgroundColor: '#ef4444',
+                            stack: 'Stack 0',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        // Load recent tasks for overview
+        function loadRecentTasks(tasks) {
+            const tbody = document.getElementById('recentTasksTable');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (tasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No recent tasks found</td></tr>';
+                return;
+            }
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                const statusClass = `status-${task.status.toLowerCase().replace(' ', '-')}`;
+                const statusBadge = `<span class="status-badge ${statusClass}">${task.status}</span>`;
+                row.innerHTML = `
+                    <td><strong>${task.taskId}</strong></td>
+                    <td>${task.description.substring(0, 50)}${task.description.length > 50 ? '...' : ''}</td>
+                    <td>${task.givenTo}</td>
+                    <td>${task.department}</td>
+                    <td>${statusBadge}</td>
+                    <td>${task.plannedDate}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewTaskDetails('${task.taskId}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${task.status === 'Revise' && userRole !== 'Super Admin' ? 
+                          `<button class="btn btn-sm btn-outline-success" onclick="showRevisionModal('${task.taskId}')">
+                            <i class="fas fa-check"></i>
+                          </button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        // Handle assign task
+        function handleAssignTask(e) {
+            e.preventDefault();
+            const givenBy = document.getElementById('givenBy');
+            const givenTo = document.getElementById('givenTo');
+            const taskDescription = document.getElementById('taskDescription');
+            const tutorialLinks = document.getElementById('tutorialLinks');
+            const department = document.getElementById('department');
+            const taskFrequency = document.getElementById('taskFrequency');
+            const plannedDate = document.getElementById('plannedDate');
+            if (!givenBy || !givenTo || !taskDescription || !department || !taskFrequency || !plannedDate) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Incomplete Form',
+                    text: 'Please fill all required fields',
+                    confirmButtonColor: '#f59e0b'
+                });
+                return;
+            }
+            const selectedOption = givenTo.options[givenTo.selectedIndex];
+            const givenToName = selectedOption.dataset.name;
+            const formData = {
+                givenBy: givenBy.value,
+                givenTo: givenTo.value,
+                givenToName: givenToName,
+                taskDescription: taskDescription.value,
+                tutorialLinks: tutorialLinks.value,
+                department: department.value,
+                taskFrequency: taskFrequency.value,
+                plannedDate: plannedDate.value
+            };
+            const assignTaskBtn = document.getElementById('assignTaskBtn');
+            assignTaskBtn.disabled = true;
+            showAssignLoader(true);
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    assignTaskBtn.disabled = false;
+                    showAssignLoader(false);
+                    if (result.success) {
+                        document.getElementById('assignTaskForm').reset();
+                        document.getElementById('givenBy').value = currentUser.userId;
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Task Assigned!',
+                            text: 'Task assigned successfully! ' + result.message,
+                            confirmButtonColor: '#10b981'
+                        });
+                        // Refresh the current section if we're in a task list
+                        if (currentSection === 'all-tasks' || currentSection === 'pending' || currentSection === 'upcoming') {
+                            loadTasks(currentSection);
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Assignment Failed',
+                            text: result.message || 'Failed to assign task',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    assignTaskBtn.disabled = false;
+                    showAssignLoader(false);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Assignment Failed',
+                        text: 'An error occurred. Please try again.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error assigning task:', error);
+                })
+                .assignTask(formData);
+        }
+        // Show/hide assign loader
+        function showAssignLoader(show) {
+            const assignBtnText = document.getElementById('assignBtnText');
+            const assignLoader = document.getElementById('assignLoader');
+            if (assignBtnText) assignBtnText.style.display = show ? 'none' : 'inline';
+            if (assignLoader) assignLoader.style.display = show ? 'inline-block' : 'none';
+        }
+        // Load tasks
+        function loadTasks(section) {
+            const tbody = document.getElementById('taskTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="loading me-2"></div>Loading tasks...</td></tr>';
+            // Reset pagination
+            currentPage = 1;
+            // Get filters
+            const filters = getAppliedFilters();
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        allTasks = result.tasks;
+                        filteredTasks = allTasks;
+                        applyFilters(); // This will handle pagination
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Error loading tasks</td></tr>';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error loading tasks',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Error loading tasks</td></tr>';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error loading tasks',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error loading tasks:', error);
+                })
+                .getTasks({
+                    section: section,
+                    userRole: userRole,
+                    userDepartment: userDepartment,
+                    filters: filters
+                });
+        }
+        // Get applied filters
+        function getAppliedFilters() {
+            let searchFilter, nameFilter, statusFilter, frequencyFilter, departmentFilter;
+            if (userRole === 'Super Admin') {
+                searchFilter = document.getElementById('searchFilter') ? document.getElementById('searchFilter').value : '';
+                nameFilter = document.getElementById('nameFilter') ? document.getElementById('nameFilter').value : '';
+                statusFilter = document.getElementById('statusFilter') ? document.getElementById('statusFilter').value : '';
+                frequencyFilter = document.getElementById('frequencyFilter') ? document.getElementById('frequencyFilter').value : '';
+                departmentFilter = document.getElementById('departmentFilter') ? document.getElementById('departmentFilter').value : '';
+            } else {
+                searchFilter = document.getElementById('searchFilterGen') ? document.getElementById('searchFilterGen').value : '';
+                nameFilter = document.getElementById('nameFilterGen') ? document.getElementById('nameFilterGen').value : '';
+                // For non-super admins, status might be implied by the section (e.g., 'Pending' for pending tab)
+                statusFilter = currentSection === 'pending' ? 'Pending' : ''; // Default to empty, let section imply it
+                frequencyFilter = '';
+                departmentFilter = '';
+            }
+            return {
+                search: searchFilter,
+                name: nameFilter,
+                status: statusFilter,
+                frequency: frequencyFilter,
+                department: departmentFilter
+            };
+        }
+        // Apply filters and handle pagination
+        function applyFilters() {
+            const filters = getAppliedFilters();
+            // Filter the tasks
+            filteredTasks = allTasks.filter(task => {
+                let matches = true;
+                if (filters.department && task.department !== filters.department) {
+                    matches = false;
+                }
+                if (filters.status && task.status !== filters.status) {
+                    matches = false;
+                }
+                if (filters.frequency && task.frequency !== filters.frequency) {
+                    matches = false;
+                }
+                if (filters.search) {
+                    const searchLower = filters.search.toLowerCase();
+                    matches = matches && (
+                        (task.taskId && task.taskId.toLowerCase().includes(searchLower)) ||
+                        (task.description && task.description.toLowerCase().includes(searchLower)) ||
+                        (task.givenTo && task.givenTo.toLowerCase().includes(searchLower))
+                    );
+                }
+                if (filters.name) {
+                    const nameLower = filters.name.toLowerCase();
+                    matches = matches && (
+                        (task.givenToName && task.givenToName.toLowerCase().includes(nameLower)) ||
+                        (task.givenTo && task.givenTo.toLowerCase().includes(nameLower))
+                    );
+                }
+                return matches;
+            });
+            // Reset to first page after filtering
+            currentPage = 1;
+            renderTaskTable();
+        }
+        // Change rows per page
+        function changeRowsPerPage() {
+            const select = document.getElementById('rowsPerPage');
+            if (select) {
+                rowsPerPage = parseInt(select.value, 10);
+                currentPage = 1; // Reset to first page
+                renderTaskTable();
+            }
+        }
+        // Render task table with pagination
+        function renderTaskTable() {
+            const tbody = document.getElementById('taskTableBody');
+            const totalTaskCount = document.getElementById('totalTaskCount');
+            const showingStart = document.getElementById('showingStart');
+            const showingEnd = document.getElementById('showingEnd');
+            const pagination = document.getElementById('pagination');
+            if (!tbody || !totalTaskCount || !showingStart || !showingEnd || !pagination) return;
+            // Update total count
+            totalTaskCount.textContent = filteredTasks.length;
+            // Calculate pagination
+            totalPages = Math.ceil(filteredTasks.length / rowsPerPage);
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = Math.min(start + rowsPerPage, filteredTasks.length);
+            // Update showing text
+            showingStart.textContent = filteredTasks.length > 0 ? start + 1 : 0;
+            showingEnd.textContent = end;
+            // Clear table body
+            tbody.innerHTML = '';
+            if (filteredTasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No tasks found</td></tr>';
+                // Clear pagination
+                pagination.innerHTML = '';
+                return;
+            }
+            // Render current page of tasks
+            for (let i = start; i < end; i++) {
+                const task = filteredTasks[i];
+                const row = document.createElement('tr');
+                // Determine status class
+                let statusClass = `status-${task.status.toLowerCase().replace(' ', '-')}`;
+                row.innerHTML = `
+                    <td><strong>${task.taskId}</strong></td>
+                    <td>${task.description.substring(0, 50)}${task.description.length > 50 ? '...' : ''}</td>
+                    <td>${task.givenTo}</td>
+                    <td>${task.department}</td>
+                    <td><span class="status-badge ${statusClass}">${task.status}</span></td>
+                    <td>${task.plannedDate}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewTaskDetails('${task.taskId}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${task.status === 'Revise' && userRole !== 'Super Admin' ? 
+                          `<button class="btn btn-sm btn-outline-success" onclick="showRevisionModal('${task.taskId}')">
+                            <i class="fas fa-check"></i>
+                          </button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            }
+            // Render pagination controls
+            renderPagination();
+        }
+        // Render pagination controls
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            if (!pagination) return;
+            pagination.innerHTML = '';
+            // Previous button
+            const prevItem = document.createElement('li');
+            prevItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevItem.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+            if (currentPage > 1) {
+                prevItem.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentPage--;
+                    renderTaskTable();
+                });
+            }
+            pagination.appendChild(prevItem);
+            // Page number buttons (simplified: show first, current, last)
+            const pagesToShow = [];
+            pagesToShow.push(1);
+            if (currentPage > 2) pagesToShow.push('...');
+            if (currentPage > 1 && currentPage < totalPages) pagesToShow.push(currentPage);
+            if (currentPage < totalPages - 1) pagesToShow.push('...');
+            if (totalPages > 1) pagesToShow.push(totalPages);
+            pagesToShow.forEach(page => {
+                if (page === '...') {
+                    const ellipsisItem = document.createElement('li');
+                    ellipsisItem.className = 'page-item disabled';
+                    ellipsisItem.innerHTML = '<a class="page-link" href="#">...</a>';
+                    pagination.appendChild(ellipsisItem);
+                } else {
+                    const pageItem = document.createElement('li');
+                    pageItem.className = `page-item ${currentPage === page ? 'active' : ''}`;
+                    pageItem.innerHTML = `<a class="page-link" href="#">${page}</a>`;
+                    if (currentPage !== page) {
+                        pageItem.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            currentPage = page;
+                            renderTaskTable();
+                        });
+                    }
+                    pagination.appendChild(pageItem);
+                }
+            });
+            // Next button
+            const nextItem = document.createElement('li');
+            nextItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextItem.innerHTML = `<a class="page-link" href="#">Next</a>`;
+            if (currentPage < totalPages) {
+                nextItem.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    currentPage++;
+                    renderTaskTable();
+                });
+            }
+            pagination.appendChild(nextItem);
+        }
+        // Clear filters
+        function clearFilters() {
+            if (userRole === 'Super Admin') {
+                document.getElementById('searchFilter').value = '';
+                document.getElementById('nameFilter').value = '';
+                document.getElementById('statusFilter').value = '';
+                document.getElementById('frequencyFilter').value = '';
+                document.getElementById('departmentFilter').value = '';
+            } else {
+                document.getElementById('searchFilterGen').value = '';
+                document.getElementById('nameFilterGen').value = '';
+            }
+            applyFilters();
+        }
+        // Refresh tasks
+        function refreshTasks() {
+            const activeNav = document.querySelector('.nav-link.active');
+            const currentSection = activeNav ? activeNav.dataset.section : 'all-tasks';
+            if (currentSection === 'overview') {
+                loadOverviewData();
+            } else if (currentSection === 'revisions') {
+                loadRevisions();
+            } else if (currentSection === 'person-reports') {
+                const personSelect = document.getElementById('personSelect');
+                if (personSelect && personSelect.value) {
+                    loadPersonTasks(personSelect.value);
+                }
+            } else {
+                loadTasks(currentSection);
+            }
+        }
+        // Load revisions
+        function loadRevisions() {
+            const tbody = document.getElementById('revisionsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="loading me-2"></div>Loading revisions...</td></tr>';
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        renderRevisionsTable(result.revisions);
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Error loading revisions</td></tr>';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error loading revisions',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Error loading revisions</td></tr>';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error loading revisions',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error loading revisions:', error);
+                })
+                .getRevisions({
+                    userRole: userRole,
+                    userDepartment: userDepartment
+                });
+        }
+        // Render revisions table
+        function renderRevisionsTable(revisions) {
+            const tbody = document.getElementById('revisionsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (revisions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No pending revisions found</td></tr>';
+                return;
+            }
+            revisions.forEach(revision => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${revision.taskId}</strong></td>
+                    <td>${revision.description.substring(0, 40)}${revision.description.length > 40 ? '...' : ''}</td>
+                    <td>${revision.givenTo}</td>
+                    <td>${revision.plannedDate}</td>
+                    <td>${revision.newDate}</td>
+                    <td>${revision.reason || 'No reason provided'}</td>
+                    <td>
+                        ${userRole !== 'Super Admin' ? 
+                          `<button class="btn btn-sm btn-success me-1" onclick="showRevisionModal('${revision.taskId}')">
+                            <i class="fas fa-check me-1"></i>Approve
+                          </button>` : 
+                          '<span class="text-muted">Contact Department Admin</span>'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        // Load person tasks and charts
+        function loadPersonTasks(personId) {
+            const tbody = document.getElementById('personTasksTable');
+            if (!tbody) return;
+            if (!personId) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Select a person to view tasks...</td></tr>';
+                // Clear charts
+                const personCompletionCtx = document.getElementById('personCompletionChart').getContext('2d');
+                const personStatusCtx = document.getElementById('personStatusChart').getContext('2d');
+                if (personCharts.completion) {
+                    personCharts.completion.destroy();
+                    personCharts.completion = null;
+                }
+                if (personCharts.status) {
+                    personCharts.status.destroy();
+                    personCharts.status = null;
+                }
+                return;
+            }
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="loading me-2"></div>Loading tasks...</td></tr>';
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        renderPersonTasks(result.tasks);
+                        initPersonCharts(result.stats);
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Error loading person tasks</td></tr>';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error loading person tasks',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Error loading person tasks</td></tr>';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error loading person tasks',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error loading person tasks:', error);
+                })
+                .getPersonTasks({
+                    personId: personId,
+                    userRole: userRole,
+                    userDepartment: userDepartment
+                });
+        }
+        // Render person tasks table
+        function renderPersonTasks(tasks) {
+            const tbody = document.getElementById('personTasksTable');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (tasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No tasks found for this person</td></tr>';
+                return;
+            }
+            tasks.forEach(task => {
+                const row = document.createElement('tr');
+                const statusClass = `status-${task.status.toLowerCase().replace(' ', '-')}`;
+                const statusBadge = `<span class="status-badge ${statusClass}">${task.status}</span>`;
+                row.innerHTML = `
+                    <td><strong>${task.taskId}</strong></td>
+                    <td>${task.description.substring(0, 50)}${task.description.length > 50 ? '...' : ''}</td>
+                    <td>${statusBadge}</td>
+                    <td>${task.plannedDate}</td>
+                    <td>${task.assignedDate || 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewTaskDetails('${task.taskId}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        // Initialize person charts
+        function initPersonCharts(stats) {
+            // Completion Chart
+            const personCompletionCtx = document.getElementById('personCompletionChart').getContext('2d');
+            // Destroy existing chart if any
+            if (personCharts.completion) {
+                personCharts.completion.destroy();
+            }
+            personCharts.completion = new Chart(personCompletionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Pending', 'Overdue'],
+                    datasets: [{
+                        data: [stats.completed, stats.pending, stats.overdue],
+                        backgroundColor: [
+                            '#10b981', // Completed
+                            '#f59e0b', // Pending
+                            '#ef4444'  // Overdue
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        const percentage = Math.round((context.parsed / stats.total) * 100);
+                                        label += `${context.parsed} (${percentage}%)`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            // Status Chart
+            const personStatusCtx = document.getElementById('personStatusChart').getContext('2d');
+            // Destroy existing chart if any
+            if (personCharts.status) {
+                personCharts.status.destroy();
+            }
+            personCharts.status = new Chart(personStatusCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Total Tasks', 'Completed', 'Pending', 'Overdue'],
+                    datasets: [{
+                        label: 'Task Count',
+                        data: [stats.total, stats.completed, stats.pending, stats.overdue],
+                        backgroundColor: [
+                            '#6366f1',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        // Load departments for super admin
+        function loadDepartments() {
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        const deptFilter = document.getElementById('departmentFilter');
+                        if (deptFilter) {
+                            deptFilter.innerHTML = '<option value="">All Departments</option>';
+                            result.departments.forEach(dept => {
+                                const option = document.createElement('option');
+                                option.value = dept;
+                                option.textContent = dept;
+                                deptFilter.appendChild(option);
+                            });
+                        }
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed to load departments.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error loading departments:', error);
+                })
+                .getDepartments();
+        }
+        // View task details
+        async function viewTaskDetails(taskId) {
+            try {
+                const result = await callGoogleScript('getTaskDetails', { taskId });
+                if (!result) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Task details could not be loaded.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    return;
+                }
+                if (result.success) {
+                    const task = result.task;
+                    const modalContent = document.getElementById('taskDetailContent');
+                    const completeTaskBtn = document.getElementById('completeTaskBtn');
+                    const requestRevisionBtn = document.getElementById('requestRevisionBtn');
+                    // Show/hide action buttons based on user role and task status
+                    completeTaskBtn.style.display = 'none';
+                    requestRevisionBtn.style.display = 'none';
+                    if (userRole !== 'Super Admin' && task.status === 'Pending' && task.userId === currentUser.userId) {
+                        completeTaskBtn.style.display = 'block';
+                        completeTaskBtn.onclick = function() {
+                            completeTask(taskId);
+                        };
+                    }
+                    if (userRole !== 'Super Admin' && task.status === 'Pending' && task.userId === currentUser.userId) {
+                        requestRevisionBtn.style.display = 'block';
+                        requestRevisionBtn.onclick = function() {
+                            showRevisionRequestModal(taskId);
+                        };
+                    }
+                    modalContent.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Task ID</label>
+                                <p>${task.taskId}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Status</label>
+                                <p><span class="status-badge status-${task.status.toLowerCase().replace(' ', '-')}">${task.status}</span></p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Given By</label>
+                                <p>${task.givenBy}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Given To</label>
+                                <p>${task.givenTo} (${task.userId})</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Department</label>
+                                <p>${task.department}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Frequency</label>
+                                <p>${task.frequency}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Planned Date</label>
+                                <p>${task.plannedDate}</p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Completed On</label>
+                                <p>${task.completedOn || 'Not completed'}</p>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-bold">Description</label>
+                                <p>${task.description}</p>
+                            </div>
+                            ${task.tutorialLinks ? `
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-bold">Tutorial Links</label>
+                                <p><a href="${task.tutorialLinks}" target="_blank" class="text-primary">${task.tutorialLinks}</a></p>
+                            </div>` : ''}
+                            ${task.reason ? `
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-bold">Revision Reason</label>
+                                <p>${task.reason || 'No reason provided'}</p>
+                            </div>` : ''}
+                            ${task.revisionStatus ? `
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-bold">Revision Status</label>
+                                <p>${task.revisionStatus}</p>
+                            </div>` : ''}
+                            ${task.newDate1 ? `
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Revision 1 Date</label>
+                                <p>${task.newDate1}</p>
+                            </div>` : ''}
+                            ${task.newDate2 ? `
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Revision 2 Date</label>
+                                <p>${task.newDate2}</p>
+                            </div>` : ''}
+                        </div>
+                    `;
+                    new bootstrap.Modal(document.getElementById('taskDetailModal')).show();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: result.message || 'Task not found.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error loading task details. Please try again later.',
+                    confirmButtonColor: '#ef4444'
+                });
+                console.error('Error loading task details:', error);
+            }
+        }
+        // Complete task
+        function completeTask(taskId) {
+            Swal.fire({
+                title: 'Confirm Task Completion',
+                text: 'Are you sure you want to mark this task as completed?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, complete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    google.script.run
+                        .withSuccessHandler(function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Task Completed!',
+                                    text: 'The task has been marked as completed.',
+                                    confirmButtonColor: '#10b981'
+                                });
+                                // Close the modal
+                                const modalElement = document.getElementById('taskDetailModal');
+                                if (modalElement) {
+                                    const modal = bootstrap.Modal.getInstance(modalElement);
+                                    if (modal) modal.hide();
+                                }
+                                // Refresh data
+                                refreshTasks();
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message || 'Failed to complete task.',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                            }
+                        })
+                        .withFailureHandler(function(error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred while completing the task.',
+                                confirmButtonColor: '#ef4444'
+                            });
+                            console.error('Error completing task:', error);
+                        })
+                        .completeTask({ taskId: taskId, userId: currentUser.userId });
+                }
+            });
+        }
+        // Show revision request modal
+        function showRevisionRequestModal(taskId) {
+            document.getElementById('revisionTaskId').value = taskId;
+            document.getElementById('revisionNewDate').value = '';
+            document.getElementById('revisionReason').value = '';
+            new bootstrap.Modal(document.getElementById('revisionRequestModal')).show();
+        }
+        // Submit revision request
+        function submitRevisionRequest() {
+            const taskId = document.getElementById('revisionTaskId').value;
+            const newDate = document.getElementById('revisionNewDate').value;
+            const reason = document.getElementById('revisionReason').value;
+            if (!newDate || !reason) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Incomplete Form',
+                    text: 'Please fill all required fields',
+                    confirmButtonColor: '#f59e0b'
+                });
+                return;
+            }
+            // Show loader on button
+            const submitBtn = document.querySelector('#revisionRequestModal .modal-footer .btn-primary');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading me-2"></span>Processing...';
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Submit Request';
+                    if (result.success) {
+                        const modalElement = document.getElementById('revisionRequestModal');
+                        if (modalElement) {
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+                            if (modal) modal.hide();
+                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Revision Requested!',
+                            text: 'Your revision request has been submitted for approval.',
+                            confirmButtonColor: '#10b981'
+                        });
+                        // Refresh data
+                        refreshTasks();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message || 'Failed to submit revision request.',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Submit Request';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while submitting the revision request.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error submitting revision request:', error);
+                })
+                .requestRevision({
+                    taskId: taskId,
+                    newDate: newDate,
+                    reason: reason,
+                    userId: currentUser.userId
+                });
+        }
+        // Show revision modal
+        function showRevisionModal(taskId) {
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        const task = result.task;
+                        const revisionTaskId = document.getElementById('revisionTaskId');
+                        const newRevisionDate = document.getElementById('newRevisionDate');
+                        const revisionTaskDetails = document.getElementById('revisionTaskDetails');
+                        if (revisionTaskId) revisionTaskId.value = taskId;
+                        if (newRevisionDate) newRevisionDate.value = task.newDate || '';
+                        if (revisionTaskDetails) {
+                            revisionTaskDetails.innerHTML = `
+                                <p><strong>Task:</strong> ${task.description}</p>
+                                <p><strong>Assigned to:</strong> ${task.givenTo}</p>
+                                <p><strong>Original Date:</strong> ${task.plannedDate}</p>
+                                <p><strong>Requested Date:</strong> ${task.newDate}</p>
+                                <p><strong>Reason:</strong> ${task.reason || 'No reason provided'}</p>
+                            `;
+                        }
+                        const modalElement = document.getElementById('revisionModal');
+                        if (modalElement) {
+                            const modal = new bootstrap.Modal(modalElement);
+                            modal.show();
+                        }
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error loading revision details. Please try again.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error loading revision details:', error);
+                })
+                .getTaskDetails({ taskId });
+        }
+        // Approve revision
+        function approveRevision() {
+            const revisionTaskId = document.getElementById('revisionTaskId');
+            const newRevisionDate = document.getElementById('newRevisionDate');
+            if (!revisionTaskId || !newRevisionDate || !newRevisionDate.value) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Incomplete Form',
+                    text: 'Please select a new date',
+                    confirmButtonColor: '#f59e0b'
+                });
+                return;
+            }
+            // Show loader on button
+            const approveBtn = document.querySelector('#revisionModal .modal-footer .btn-primary');
+            if (approveBtn) {
+                approveBtn.disabled = true;
+                approveBtn.innerHTML = '<span class="loading me-2"></span>Processing...';
+            }
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (approveBtn) {
+                        approveBtn.disabled = false;
+                        approveBtn.innerHTML = 'Approve Revision';
+                    }
+                    if (result.success) {
+                        const modalElement = document.getElementById('revisionModal');
+                        if (modalElement) {
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+                            if (modal) modal.hide();
+                        }
+                        loadRevisions();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Revision Approved!',
+                            text: 'The revision has been approved successfully.',
+                            confirmButtonColor: '#10b981'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Approval Failed',
+                            text: result.message || 'Failed to approve revision',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    if (approveBtn) {
+                        approveBtn.disabled = false;
+                        approveBtn.innerHTML = 'Approve Revision';
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Approval Failed',
+                        text: 'An error occurred. Please try again.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error approving revision:', error);
+                })
+                .approveRevision({
+                    taskId: revisionTaskId.value,
+                    newDate: newRevisionDate.value
+                });
+        }
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            const themeIcon = document.querySelector('.theme-toggle i');
+            if (themeIcon) {
+                themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            }
+            document.body.style.transition = 'background-color 0.4s ease, color 0.4s ease';
+        }
+        // Toggle sidebar (mobile)
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) sidebar.classList.toggle('show');
+        }
+        // Logout
+        function logout() {
+            sessionStorage.removeItem('currentUser');
+            currentUser = null;
+            userRole = null;
+            userDepartment = null;
+            Swal.fire({
+                icon: 'success',
+                title: 'Logged out!',
+                text: 'You have been logged out successfully.',
+                showConfirmButton: false,
+                timer: 2000
+            }).then(() => {
+                showLogin();
+            });
+        }
+        // Debounce function for search
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        // Helper to call Google Script safely
+        function callGoogleScript(funcName, params) {
+            return new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(reject)
+                    [funcName](params);
+            });
+        }
+        // Load links for Super Admin
+        function loadLinks() {
+            if (userRole !== 'Super Admin') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: 'Only Super Admin can manage links.',
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+            const linksList = document.getElementById('linksList');
+            linksList.innerHTML = '<div class="text-center py-4"><div class="loading me-2"></div>Loading links...</div>';
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        renderLinks(result.links);
+                    } else {
+                        linksList.innerHTML = '<div class="text-center py-4 text-danger">Error loading links</div>';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error loading links',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    linksList.innerHTML = '<div class="text-center py-4 text-danger">Error loading links</div>';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error loading links',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error loading links:', error);
+                })
+                .getLinks();
+        }
+        // Render links
+        function renderLinks(links) {
+            const linksList = document.getElementById('linksList');
+            linksList.innerHTML = '';
+            if (links.length === 0) {
+                linksList.innerHTML = '<div class="text-center py-4 text-muted">No links found. Add your first link above.</div>';
+                return;
+            }
+            links.forEach(link => {
+                const linkItem = document.createElement('div');
+                linkItem.className = 'link-item';
+                linkItem.innerHTML = `
+                    <div>
+                        <a href="${link.url}" target="_blank" class="text-decoration-none">
+                            <strong>${link.title}</strong>
+                        </a>
+                        <div class="text-muted small">${link.url}</div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLink('${link.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                linksList.appendChild(linkItem);
+            });
+        }
+        // Add link
+        function addLink() {
+            if (userRole !== 'Super Admin') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: 'Only Super Admin can manage links.',
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+            const linkTitle = document.getElementById('linkTitle').value.trim();
+            const linkUrl = document.getElementById('linkUrl').value.trim();
+            if (!linkTitle || !linkUrl) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Incomplete Form',
+                    text: 'Please fill in both the title and URL fields.',
+                    confirmButtonColor: '#f59e0b'
+                });
+                return;
+            }
+            // Validate URL
+            try {
+                new URL(linkUrl);
+            } catch (e) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid URL',
+                    text: 'Please enter a valid URL (including http:// or https://).',
+                    confirmButtonColor: '#f59e0b'
+                });
+                return;
+            }
+            // Show loader on button
+            const addBtn = document.querySelector('#links-section .btn-primary');
+            addBtn.disabled = true;
+            addBtn.innerHTML = '<span class="loading me-2"></span>Adding...';
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    addBtn.disabled = false;
+                    addBtn.innerHTML = '<i class="fas fa-plus"></i> Add';
+                    if (result.success) {
+                        // Clear form
+                        document.getElementById('linkTitle').value = '';
+                        document.getElementById('linkUrl').value = '';
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Link Added!',
+                            text: 'The link has been added successfully.',
+                            confirmButtonColor: '#10b981'
+                        });
+                        // Reload links
+                        loadLinks();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message || 'Failed to add link.',
+                            confirmButtonColor: '#ef4444'
+                        });
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    addBtn.disabled = false;
+                    addBtn.innerHTML = '<i class="fas fa-plus"></i> Add';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while adding the link.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    console.error('Error adding link:', error);
+                })
+                .addLink({
+                    title: linkTitle,
+                    url: linkUrl
+                });
+        }
+        // Delete link
+        function deleteLink(linkId) {
+            if (userRole !== 'Super Admin') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: 'Only Super Admin can manage links.',
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+            Swal.fire({
+                title: 'Confirm Deletion',
+                text: 'Are you sure you want to delete this link? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    google.script.run
+                        .withSuccessHandler(function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Link Deleted!',
+                                    text: 'The link has been deleted successfully.',
+                                    confirmButtonColor: '#10b981'
+                                });
+                                // Reload links
+                                loadLinks();
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message || 'Failed to delete link.',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                            }
+                        })
+                        .withFailureHandler(function(error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred while deleting the link.',
+                                confirmButtonColor: '#ef4444'
+                            });
+                            console.error('Error deleting link:', error);
+                        })
+                        .deleteLink({ id: linkId });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
